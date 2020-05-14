@@ -90,7 +90,7 @@ under the License.
 
   <properties>
     <doxiaVersion>1.9</doxiaVersion>
-    <doxiaSitetoolsVersion>1.8.1</doxiaSitetoolsVersion>
+    <doxiaSitetoolsVersion>1.9</doxiaSitetoolsVersion>
     <mavenVersion>2.2.1</mavenVersion>
     <javaVersion>7</javaVersion>
   </properties>
