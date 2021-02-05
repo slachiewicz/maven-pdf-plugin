@@ -164,9 +164,7 @@ public class DocumentDescriptorReader
         }
         catch ( InterpolationException e )
         {
-            final IOException io = new IOException( "Error interpolating document descriptor" );
-            io.initCause( e );
-            throw io;
+            throw new IOException( "Error interpolating document descriptor", e );
         }
     }
 }

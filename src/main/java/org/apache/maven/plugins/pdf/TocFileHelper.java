@@ -65,7 +65,7 @@ class TocFileHelper
     {
         try ( Reader reader = ReaderFactory.newReader( getTocFile( workingDirectory ), "UTF-8" ) )
         {
-            return (Map) JSONParser.parseJSON( reader );
+            return (Map<String, Object>) JSONParser.parseJSON( reader );
         }
     }
 

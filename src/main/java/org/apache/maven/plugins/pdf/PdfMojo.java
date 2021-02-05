@@ -21,7 +21,6 @@ package org.apache.maven.plugins.pdf;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -31,15 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.io.input.XmlStreamReader;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.doxia.Doxia;
 import org.apache.maven.doxia.docrenderer.AbstractDocumentRenderer;
 import org.apache.maven.doxia.docrenderer.DocumentRenderer;
@@ -71,13 +65,11 @@ import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.model.Reporting;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.PluginManager;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.reporting.AbstractMavenReportRenderer;
 import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.reporting.MavenReportException;
@@ -157,28 +149,12 @@ public class PdfMojo
     private SiteTool siteTool;
 
     /**
-     * The Plugin manager instance used to resolve Plugin descriptors.
-     *
-     * @since 1.1
-     */
-    @Component( role = PluginManager.class )
-    private PluginManager pluginManager;
-
-    /**
      * Doxia.
      *
      * @since 1.1
      */
     @Component
     private Doxia doxia;
-
-    /**
-     * Project builder.
-     *
-     * @since 1.1
-     */
-    @Component
-    private MavenProjectBuilder mavenProjectBuilder;
 
     // ----------------------------------------------------------------------
     // Mojo Parameters
@@ -1331,26 +1307,12 @@ public class PdfMojo
         }
         catch ( ParseException e )
         {
-            StringBuilder sb = new StringBuilder( 1024 );
-
-            sb.append( EOL );
-            sb.append( "Error when parsing the generated report xdoc file: " );
-            sb.append( generatedReport.getAbsolutePath() );
-            sb.append( EOL );
-            sb.append( e.getMessage() );
-            sb.append( EOL );
-
-            sb.append( "You could:" ).append( EOL );
-            sb.append( "  * exclude all reports using -DincludeReports=false" ).append( EOL );
-            sb.append( "  * remove the " );
-            sb.append( fullGoal );
-            sb.append( " from the <reporting/> part. To not affect the site generation, " );
-            sb.append( "you could create a PDF profile." );
-
-            sb.append( EOL ).append( "Ignoring the \"" ).append( localReportName )
-                    .append( "\" report in the PDF." ).append( EOL );
-
-            getLog().error( sb.toString() );
+            String sb = EOL + "Error when parsing the generated report xdoc file: "
+                    + generatedReport.getAbsolutePath() + EOL + e.getMessage() + EOL + "You could:" + EOL
+                    + "  * exclude all reports using -DincludeReports=false" + EOL + "  * remove the " + fullGoal
+                    + " from the <reporting/> part. To not affect the site generation, you could create a PDF profile."
+                    + EOL + "Ignoring the \"" + localReportName + "\" report in the PDF." + EOL;
+            getLog().error( sb );
             getLog().debug( e );
 
             return false;
@@ -1376,11 +1338,6 @@ public class PdfMojo
     protected List<MavenReportExecution> getReports()
         throws MojoExecutionException
     {
-        if ( !isMaven3OrMore() )
-        {
-            getLog().error( "Report generation is not supported with Maven <= 2.x" );
-        }
-
         MavenReportExecutorRequest mavenReportExecutorRequest = new MavenReportExecutorRequest();
         mavenReportExecutorRequest.setLocalRepository( localRepository );
         mavenReportExecutorRequest.setMavenSession( session );
@@ -1428,45 +1385,7 @@ public class PdfMojo
             mpir.setArtifactId( "maven-project-info-reports-plugin" );
             reportingPlugins.add( mpir );
         }
-        return reportingPlugins.toArray( new ReportPlugin[reportingPlugins.size()] );
-    }
-
-    /**
-     * Check the current Maven version to see if it's Maven 3.0 or newer.
-     */
-    protected static boolean isMaven3OrMore()
-    {
-        try
-        {
-            ArtifactVersion mavenVersion = new DefaultArtifactVersion( getMavenVersion() );
-            return VersionRange.createFromVersionSpec( "[3.0,)" ).containsVersion( mavenVersion );
-        }
-        catch ( InvalidVersionSpecificationException e )
-        {
-            return false;
-        }
-//        return new ComparableVersion( getMavenVersion() ).compareTo( new ComparableVersion( "3.0" ) ) >= 0;
-    }
-
-    protected static String getMavenVersion()
-    {
-        // This relies on the fact that MavenProject is the in core classloader
-        // and that the core classloader is for the maven-core artifact
-        // and that should have a pom.properties file
-        // if this ever changes, we will have to revisit this code.
-        final Properties properties = new Properties();
-
-        try ( InputStream in = MavenProject.class.getClassLoader().getResourceAsStream(
-                "META-INF/maven/org.apache.maven/maven-core/pom.properties" ) )
-        {
-            properties.load( in );
-        }
-        catch ( IOException ioe )
-        {
-            return "";
-        }
-
-        return properties.getProperty( "version" ).trim();
+        return reportingPlugins.toArray( new ReportPlugin[0] );
     }
 
     // ----------------------------------------------------------------------
